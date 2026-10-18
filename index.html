@@ -1,0 +1,1969 @@
+<!doctype html>
+<html lang="zh-Hant-TW" data-theme="candy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>吃什麼轉盤</title>
+<meta name="description" content="轉一下就知道今天吃什麼：篩選、近期權重、分享連結，資料只存在你的瀏覽器。">
+<meta name="theme-color" content="#FFF7F0">
+<meta property="og:type" content="website">
+<meta property="og:title" content="吃什麼轉盤">
+<meta property="og:description" content="轉一下就知道今天吃什麼。把轉盤用連結分享給朋友，一起決定！">
+<meta property="og:url" content="https://cornnnnnnnn.github.io/food-choice/">
+<meta property="og:image" content="https://cornnnnnnnn.github.io/food-choice/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="吃什麼轉盤：轉一下就知道今天吃什麼">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%A1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF7F0;
+  --surface: #FFFFFF;
+  --ink: #3D2C3E;
+  --muted: #6E5D70;
+  --primary: #FF6F91;
+  --primary-ink: #3D2C3E;
+  --accent-text: #C2185B;
+  --chip: #FFE9EF;
+  --line: #F1DCE3;
+  --danger: #D32F4F;
+  --focus: #3A7BD5;
+  --shadow: 0 8px 24px rgba(61, 44, 62, .12);
+  --font: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+:root[data-theme="midnight"] {
+  --bg: #1C1828;
+  --surface: #2A2440;
+  --ink: #FFF5F8;
+  --muted: #C9BEDB;
+  --primary: #FF8FAB;
+  --primary-ink: #1C1828;
+  --accent-text: #FFB3C6;
+  --chip: #3A3154;
+  --line: #463D63;
+  --danger: #FF8A9B;
+  --focus: #8FB8FF;
+  --shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+[hidden] { display: none !important; }
+
+/* ---------- header ---------- */
+.app-header {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top));
+  background: var(--bg);
+  max-width: 1100px; margin: 0 auto;
+}
+.app-header select {
+  flex: 1; min-width: 0; min-height: 44px;
+  padding: 0 12px; border-radius: 14px;
+  border: 1.5px solid var(--line); background: var(--surface);
+  font-weight: 700;
+}
+.icon-btn {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid var(--line); background: var(--surface);
+  font-size: 20px; line-height: 1; display: grid; place-items: center;
+}
+
+/* ---------- layout ---------- */
+main {
+  max-width: 1100px; margin: 0 auto;
+  padding: 4px 16px calc(88px + env(safe-area-inset-bottom));
+}
+.panel { display: none; }
+body[data-tab="spin"] .panel-spin,
+body[data-tab="list"] .panel-list,
+body[data-tab="history"] .panel-history,
+body[data-tab="settings"] .panel-settings { display: block; }
+
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav.tabs button {
+  min-height: 58px; border: none; background: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: 12px; color: var(--muted);
+}
+nav.tabs button span { font-size: 20px; }
+nav.tabs button[aria-current="page"] { color: var(--accent-text); font-weight: 700; }
+
+@media (min-width: 900px) {
+  main {
+    display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+    gap: 32px; align-items: start;
+  }
+  .panel-spin { display: block !important; position: sticky; top: 72px; }
+  body[data-tab="spin"] .panel-list { display: block; }
+  nav.tabs { grid-template-columns: repeat(3, 1fr); }
+  nav.tabs .tab-spin { display: none; }
+}
+
+/* ---------- wheel ---------- */
+.wheel-wrap {
+  position: relative; width: min(100%, 420px); aspect-ratio: 1 / 1;
+  margin: 18px auto 0;
+}
+#wheel {
+  display: block; width: 100%; height: 100%; border-radius: 50%;
+  box-shadow: 0 12px 32px rgba(61, 44, 62, .18);
+}
+#wheel.fade { animation: fadeIn .3s ease; }
+@keyframes fadeIn { from { opacity: .15; } to { opacity: 1; } }
+.pointer {
+  position: absolute; top: -14px; left: 50%; z-index: 2;
+  width: 34px; height: 46px; transform: translateX(-50%);
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .25));
+  pointer-events: none;
+}
+.pointer.bounce { animation: bounce .5s ease; }
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  35% { transform: translateX(-50%) translateY(-10px); }
+  65% { transform: translateX(-50%) translateY(2px); }
+}
+.spin-btn {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 92px; height: 92px; border-radius: 50%;
+  border: 6px solid var(--surface); background: var(--primary); color: var(--primary-ink);
+  font-size: 24px; font-weight: 700; box-shadow: 0 4px 14px rgba(0, 0, 0, .2);
+  touch-action: manipulation;
+}
+.spin-btn[aria-disabled="true"] { cursor: progress; }
+.hint { text-align: center; color: var(--muted); font-size: 14px; margin: 12px 0 4px; min-height: 20px; }
+
+.banner, .excluded, .empty {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--chip); border-radius: 14px; padding: 10px 14px; margin: 10px 0;
+  font-size: 14px;
+}
+.banner span, .excluded span { flex: 1; min-width: 0; }
+.empty { flex-direction: column; text-align: center; }
+.empty p { margin: 0; font-weight: 700; }
+
+.filters { margin-top: 8px; }
+.chips {
+  display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px;
+  border: 1.5px solid var(--line); background: var(--surface); font-size: 14px;
+}
+.chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); font-weight: 700; }
+.chip:disabled, .is-spinning .app-header select { opacity: .5; cursor: not-allowed; }
+
+/* ---------- generic ---------- */
+.card { background: var(--surface); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); margin: 12px 0; }
+h2 { font-size: 20px; margin: 0 0 4px; }
+h3 { font-size: 15px; margin: 18px 0 8px; color: var(--muted); }
+.muted { color: var(--muted); font-size: 13px; margin: 4px 0; }
+.btn {
+  min-height: 44px; padding: 0 18px; border-radius: 14px; border: none;
+  font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-primary { background: var(--primary); color: var(--primary-ink); }
+.btn-ghost { background: var(--chip); }
+.btn-danger { background: var(--danger); color: #FFFFFF; }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.btn:disabled, .icon-sm:disabled, .star:disabled { opacity: .45; cursor: not-allowed; }
+.btn-link { background: none; border: none; color: var(--accent-text); text-decoration: underline; min-height: 44px; }
+.tool-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* ---------- list ---------- */
+.items { list-style: none; padding: 0; margin: 8px 0; }
+.item { border-bottom: 1px solid var(--line); padding: 10px 0; }
+.item:last-child { border-bottom: none; }
+.item-main { display: flex; align-items: center; gap: 10px; }
+.item-main input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); flex: none; }
+.item-emoji { font-size: 24px; width: 32px; text-align: center; flex: none; }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-weight: 700; overflow-wrap: anywhere; }
+.item-meta { font-size: 13px; color: var(--muted); }
+.item-pct { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent-text); flex: none; }
+.item.off .item-name, .item.off .item-emoji { opacity: .45; }
+.item-sub { display: flex; align-items: center; gap: 4px; margin-top: 4px; padding-left: 64px; }
+.stars { display: flex; flex: 1; }
+.star {
+  width: 36px; height: 36px; border: none; background: none; font-size: 20px; color: #E8A400; padding: 0;
+}
+:root[data-theme="midnight"] .star { color: #FFD166; }
+.icon-sm { width: 40px; height: 40px; border-radius: 12px; border: none; background: var(--chip); font-size: 16px; }
+.reason { font-size: 13px; color: var(--muted); }
+
+/* ---------- history ---------- */
+.seg { display: inline-flex; background: var(--chip); border-radius: 12px; padding: 3px; }
+.seg button { border: none; background: none; min-height: 36px; padding: 0 14px; border-radius: 9px; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--surface); font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
+.bar-row { display: grid; grid-template-columns: 44px 1fr 32px; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
+.bar-track { height: 14px; background: var(--chip); border-radius: 7px; overflow: hidden; }
+.bar { height: 100%; background: var(--primary); border-radius: 7px; }
+.bar-num { text-align: right; font-variant-numeric: tabular-nums; }
+.rank { margin: 4px 0; padding-left: 22px; }
+.rank li { margin: 3px 0; }
+.hist-list { list-style: none; padding: 0; margin: 0; }
+.hist-list li { display: flex; gap: 10px; padding: 6px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+.hist-list time { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.hist-list .rej span { text-decoration: line-through; opacity: .55; }
+.tag { font-size: 12px; padding: 0 6px; border-radius: 6px; background: var(--chip); color: var(--muted); }
+
+/* ---------- settings ---------- */
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; border-bottom: 1px solid var(--line); }
+.setting:last-of-type { border-bottom: none; }
+.setting select { min-height: 40px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); padding: 0 8px; }
+.setting input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--primary); }
+
+/* ---------- dialogs ---------- */
+dialog {
+  border: none; border-radius: 24px; padding: 24px; width: min(92vw, 400px);
+  background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+dialog::backdrop { background: rgba(30, 20, 35, .5); }
+.result { text-align: center; animation: pop .35s ease; }
+@keyframes pop { from { opacity: 0; } to { opacity: 1; } }
+.result-emoji { font-size: 68px; line-height: 1.1; min-height: 20px; }
+.result-name { font-size: 30px; margin: 6px 0 10px; overflow-wrap: anywhere; }
+.result-line { margin: 0 0 6px; }
+.result-night { margin: 0 0 6px; color: var(--accent-text); font-size: 14px; }
+.result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.result-actions.single { grid-template-columns: 1fr; }
+dialog.destiny { box-shadow: 0 0 0 4px #FFD166, 0 0 48px 12px rgba(255, 209, 102, .75); }
+#confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; }
+.dlg-title { font-size: 20px; font-weight: 700; margin: 0 0 16px; text-align: center; }
+.dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.field { display: block; margin: 12px 0; }
+.field > span { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+.field input, .field select, textarea {
+  width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--bg);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.form-error { color: var(--danger); font-size: 14px; min-height: 20px; margin: 4px 0 0; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; z-index: 20; max-width: calc(100vw - 32px); text-align: center;
+}
+
+/* ---------- tests (?test) ---------- */
+.test-panel { position: fixed; inset: 0; overflow: auto; background: var(--bg); padding: 16px; z-index: 100; font-size: 14px; }
+.test-panel li.pass::marker { content: "✅ "; }
+.test-panel li.fail::marker { content: "❌ "; }
+.test-panel li { margin: 4px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pointer.bounce, #wheel.fade, .result { animation: none; }
+}
+</style>
+</head>
+<body data-tab="spin">
+
+<header class="app-header">
+  <label class="sr-only" for="wheelSelect">選擇轉盤</label>
+  <select id="wheelSelect"></select>
+  <button class="icon-btn" id="soundBtn" type="button" aria-label="音效與震動" aria-pressed="true">🔊</button>
+  <button class="icon-btn" id="shareBtn" type="button" aria-label="分享這個轉盤">🔗</button>
+</header>
+
+<main>
+  <section class="panel panel-spin" aria-label="轉盤">
+    <div id="tempBanner" class="banner" hidden>
+      <span id="tempText"></span>
+      <button type="button" class="btn btn-ghost btn-sm" id="tempExit">結束試轉</button>
+    </div>
+    <div class="wheel-wrap" id="wheelWrap">
+      <svg class="pointer" id="pointer" viewBox="0 0 34 46" aria-hidden="true">
+        <path d="M17 45 C 6 28, 1 21, 1 16 A 16 16 0 0 1 33 16 C 33 21, 28 28, 17 45 Z" fill="var(--primary)" stroke="var(--surface)" stroke-width="2"/>
+        <circle cx="17" cy="16" r="6" fill="var(--surface)"/>
+      </svg>
+      <canvas id="wheel" aria-hidden="true"></canvas>
+      <button id="spinBtn" class="spin-btn" type="button">轉！</button>
+    </div>
+    <p class="hint" id="wheelHint"></p>
+    <div id="excludedBar" class="excluded" hidden>
+      <span id="excludedText"></span>
+      <button type="button" class="btn btn-ghost btn-sm" id="restoreExcluded">全部放回</button>
+    </div>
+    <div id="emptyMsg" class="empty" hidden>
+      <p>沒有符合條件的選項</p>
+      <button type="button" class="btn btn-primary btn-sm" id="clearFilters">清除篩選</button>
+    </div>
+    <div class="filters">
+      <div class="chips" id="catFilters" role="group" aria-label="類別篩選"></div>
+      <div class="chips" id="priceFilters" role="group" aria-label="價位篩選"></div>
+    </div>
+  </section>
+
+  <section class="panel panel-list" aria-label="清單"><div id="listRoot"></div></section>
+  <section class="panel panel-history" aria-label="紀錄"><div id="historyRoot"></div></section>
+  <section class="panel panel-settings" aria-label="設定"><div id="settingsRoot"></div></section>
+</main>
+
+<nav class="tabs" aria-label="分頁">
+  <button type="button" data-tab="spin" class="tab-spin"><span aria-hidden="true">🎡</span>轉盤</button>
+  <button type="button" data-tab="list"><span aria-hidden="true">📝</span>清單</button>
+  <button type="button" data-tab="history"><span aria-hidden="true">📊</span>紀錄</button>
+  <button type="button" data-tab="settings"><span aria-hidden="true">⚙️</span>設定</button>
+</nav>
+
+<div id="live" class="sr-only" aria-live="polite"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<dialog id="resultDlg" aria-labelledby="resultName">
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="result">
+    <div class="result-emoji" id="resultEmoji" aria-hidden="true"></div>
+    <h2 class="result-name" id="resultName"></h2>
+    <p class="result-line" id="resultLine"></p>
+    <p class="result-night" id="resultNight" hidden></p>
+    <div class="result-actions" id="resultActions">
+      <button type="button" class="btn btn-primary" id="acceptBtn">就吃這個</button>
+      <button type="button" class="btn btn-ghost" id="respinBtn">再轉一次</button>
+    </div>
+    <button type="button" class="btn-link" id="shareResultBtn">分享結果</button>
+  </div>
+</dialog>
+
+<dialog id="pickyDlg" aria-labelledby="pickyTitle">
+  <p class="dlg-title" id="pickyTitle">你是不是其實不餓？</p>
+  <div class="dlg-actions">
+    <button type="button" class="btn btn-ghost" id="pickyAgain">我還要轉</button>
+    <button type="button" class="btn btn-primary" id="pickyDecide">幫我直接決定</button>
+  </div>
+</dialog>
+
+<dialog id="importDlg" aria-labelledby="importText">
+  <p class="dlg-title" id="importText"></p>
+  <div class="dlg-actions">
+    <button type="button" class="btn btn-ghost" id="importCancel">取消</button>
+    <button type="button" class="btn btn-ghost" id="importTry">先轉一次看看</button>
+    <button type="button" class="btn btn-primary" id="importAdd">加入我的轉盤</button>
+  </div>
+</dialog>
+
+<dialog id="itemDlg" aria-labelledby="itemDlgTitle">
+  <form id="itemForm" novalidate>
+    <h2 id="itemDlgTitle">新增項目</h2>
+    <label class="field"><span>名稱（1–20 字）</span><input name="name" autocomplete="off" required></label>
+    <label class="field"><span>emoji（單一個，可留白）</span><input name="emoji" autocomplete="off"></label>
+    <div class="field-row">
+      <label class="field"><span>類別</span><select name="category"></select></label>
+      <label class="field"><span>價位</span><select name="price">
+        <option value="1">$ 100 以下</option><option value="2">$$ 100–200</option><option value="3">$$$ 200 以上</option>
+      </select></label>
+      <label class="field"><span>權重</span><select name="weight">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+      </select></label>
+    </div>
+    <p class="form-error" id="itemError" role="alert"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" id="itemCancel">取消</button>
+      <button type="submit" class="btn btn-primary">儲存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDlg" aria-labelledby="confirmText">
+  <p class="dlg-title" id="confirmText"></p>
+  <div class="dlg-actions">
+    <button type="button" class="btn btn-ghost" id="confirmCancel">取消</button>
+    <button type="button" class="btn btn-primary" id="confirmOk">確定</button>
+  </div>
+</dialog>
+
+<dialog id="promptDlg" aria-labelledby="promptLabel">
+  <form id="promptForm" novalidate>
+    <label class="field"><span id="promptLabel"></span><input id="promptInput" autocomplete="off"></label>
+    <p class="form-error" id="promptError" role="alert"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" id="promptCancel">取消</button>
+      <button type="submit" class="btn btn-primary">確定</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="linkDlg" aria-labelledby="linkTitle">
+  <p class="dlg-title" id="linkTitle">請手動複製</p>
+  <textarea id="linkText" rows="5" readonly></textarea>
+  <div class="dlg-actions">
+    <button type="button" class="btn btn-primary" id="linkClose">關閉</button>
+  </div>
+</dialog>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+ * 常數
+ * ===================================================================== */
+const STORAGE_KEY = 'food-choice:v1';
+const TAU = Math.PI * 2;
+const POINTER = Math.PI * 1.5;          // 指針在正上方（canvas 角度，順時針為正）
+const TWO32 = 4294967296;
+const FONT = '"Noto Sans TC", system-ui, sans-serif';
+
+const CATS = [
+  ['rice', '飯類'], ['noodle', '麵類'], ['snack', '小吃'], ['foreign', '異國'],
+  ['fast', '速食'], ['light', '輕食'], ['hotpot', '鍋物'],
+];
+const CAT_IDS = CATS.map(c => c[0]);
+const CAT_LABEL = Object.fromEntries(CATS);
+const PRICE_LABEL = { 1: '$', 2: '$$', 3: '$$$' };
+const LIMITS = { name: 20, itemsMin: 2, itemsMax: 50, history: 500, wheels: 100, shareUrl: 2000, shareCode: 8000, inflate: 65536 };
+const THEMES = ['candy', 'midnight'];
+const EGG_IDS = ['midnight'];
+
+const DEFAULT_ITEMS = [
+  ['便當', '🍱', 'rice', 1], ['滷肉飯', '🍚', 'rice', 1], ['雞肉飯', '🐔', 'rice', 1],
+  ['咖哩飯', '🍛', 'rice', 2], ['炒飯', '🍳', 'rice', 1], ['自助餐', '🍽️', 'rice', 1],
+  ['牛肉麵', '🍜', 'noodle', 2], ['拉麵', '🍥', 'noodle', 3], ['乾麵', '🥢', 'noodle', 1],
+  ['義大利麵', '🍝', 'foreign', 2], ['水餃', '🥟', 'snack', 1], ['鍋貼', '🥠', 'snack', 1],
+  ['鹹酥雞', '🍢', 'snack', 1], ['漢堡', '🍔', 'fast', 2], ['炸雞', '🍗', 'fast', 2],
+  ['壽司', '🍣', 'foreign', 2], ['越南河粉', '🥣', 'foreign', 2], ['沙拉', '🥗', 'light', 2],
+  ['火鍋', '🍲', 'hotpot', 3], ['麻辣燙', '🌶️', 'hotpot', 2],
+];
+
+const LINES = [
+  '就決定是 {name} 了，轉盤說的不能反悔。', '宇宙的訊號已經很明顯了。', '今天的你，值得一份 {name}。',
+  '別再猶豫了，肚子已經在抗議。', '轉盤已讀，你不能不回。', '這一餐，交給命運。',
+  '恭喜抽中今日特餐！', '選擇障礙？已經幫你治好了。', '吃飽才有力氣算微積分。',
+  '{name}：「我等你很久了。」', '這是轉盤的最終答案。', '聽說今天吃 {name} 的人都很順。',
+  '這不是隨機，這是緣分。', '決定好了，剩下的就是出門。', '吃什麼不重要，跟誰吃比較重要。',
+  '別看了，快去排隊。', '本轉盤掛保證。', '錢包說可以，那就可以。',
+  '{name}，出發！', '民主的結果，請大家尊重。', '群組吵了三十分鐘，轉盤只花了四秒半。',
+  '再轉一次也不會比較好吃。', '你的胃已經投票了。', '今天就用 {name} 犒賞自己。',
+  '天時地利人和，就差你出門。', '抽到了就是好籤。', '平凡的一餐，也值得認真吃。',
+  '下一餐的煩惱，下一餐再說。', '恭喜，你今天少煩惱了一件事。', '轉盤負責選，你負責吃。',
+];
+const NIGHT_LINES = [
+  '宵夜時間到，吃完記得刷牙。', '這個時間還醒著，辛苦了。', '深夜的 {name} 特別好吃，這是常識。',
+  '出門前先確認店家還有沒有開。', '熬夜的人需要一點慰勞。', '吃完早點睡，明天可能還有早八。',
+  '月亮作證，這一餐不算數。', '夜深了，路上小心。',
+];
+const TXT = {
+  destiny: '命中注定，別再掙扎了',
+  onlyOne: '只剩它了，就是它',
+  unlock: '解鎖隱藏主題：宵夜模式',
+};
+
+const PALETTES = {
+  candy: ['#FFB3C6', '#FFD97D', '#A8E6CF', '#A0C4FF', '#CDB4DB', '#FFC8A2'],
+  midnight: ['#7A3E65', '#6B5B2E', '#2E6B5B', '#3A5A8C', '#5B4A7A', '#8C5A3E'],
+};
+const WHEEL_INK = { candy: '#3D2C3E', midnight: '#FFF5F8' };
+const THEME_BG = { candy: '#FFF7F0', midnight: '#1C1828' };
+
+/* =====================================================================
+ * 小工具
+ * ===================================================================== */
+const $ = sel => document.querySelector(sel);
+const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter)
+  ? new Intl.Segmenter('zh-Hant', { granularity: 'grapheme' }) : null;
+const graphemes = s => segmenter ? Array.from(segmenter.segment(s), x => x.segment) : Array.from(s);
+const gLen = s => graphemes(s).length;
+const mod = (a, m) => ((a % m) + m) % m;
+const isPlainObj = o => o !== null && typeof o === 'object' && !Array.isArray(o);
+const isIntIn = (v, a, b) => Number.isInteger(v) && v >= a && v <= b;
+const CTRL = /[\u0000-\u001F\u007F-\u009F\u2028\u2029]/;
+const EMOJI_RE = /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20E3/u;
+
+/** 建立 DOM：文字一律走 textContent／text node，全程不使用 innerHTML。 */
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) {
+    for (const [k, v] of Object.entries(props)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (k === 'disabled' || k === 'checked' || k === 'value') el[k] = v;
+      else el.setAttribute(k, v === true ? '' : String(v));
+    }
+  }
+  for (const c of kids.flat()) {
+    if (c === null || c === undefined || c === false) continue;
+    el.append(c instanceof Node ? c : String(c));
+  }
+  return el;
+}
+
+/* =====================================================================
+ * 隨機數（crypto）
+ * ===================================================================== */
+const pool = new Uint32Array(1024);
+let poolPos = pool.length;
+function randU32() {
+  if (poolPos >= pool.length) { crypto.getRandomValues(pool); poolPos = 0; }
+  return pool[poolPos++];
+}
+/** 拒絕取樣：回傳 {0, …, W−1} 上的均勻整數，沒有取模偏差。 */
+function randIntBelow(W, next = randU32) {
+  if (!Number.isInteger(W) || W < 1 || W > TWO32) throw new RangeError('W 必須是 1 到 2^32 的整數');
+  const L = TWO32 - (TWO32 % W);          // L 是 W 的倍數
+  for (;;) {
+    const x = next();
+    if (x < L) return x % W;
+  }
+}
+const randUnit = () => randU32() / TWO32;  // [0, 1)
+const randomOf = arr => arr[randIntBelow(arr.length)];
+
+/* =====================================================================
+ * 抽選與旋轉（純函式；索引從 0 開始，規格書寫法從 1 開始）
+ * ===================================================================== */
+function dayNumber(ts) {
+  const d = new Date(ts);
+  return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+}
+/** w = b · min(d + 1, C + 1)；從沒吃過（d = null）時為 b · (C + 1)。 */
+function effectiveWeight(b, d, C) {
+  if (d === null || d === undefined) return b * (C + 1);
+  return b * Math.min(Math.max(d, 0) + 1, C + 1);
+}
+/** 回傳最小的 i 使 w_0 + … + w_i > r。 */
+function indexFromR(weights, r) {
+  let acc = 0;
+  for (let i = 0; i < weights.length; i++) {
+    acc += weights[i];
+    if (acc > r) return i;
+  }
+  throw new RangeError('r 超出範圍');
+}
+function pickIndex(weights, next) {
+  const W = weights.reduce((a, b) => a + b, 0);
+  return indexFromR(weights, randIntBelow(W, next));
+}
+/** Δ = 2πN + [(3π/2 − α* − R0) mod 2π] */
+function spinDelta(R0, alpha, N) {
+  return TAU * N + mod(POINTER - alpha - R0, TAU);
+}
+/** 指針下的格子：min(⌊β/θ⌋, n − 1)，β = (3π/2 − R) mod 2π */
+function pointerIndex(R, n) {
+  const theta = TAU / n;
+  const beta = mod(POINTER - R, TAU);
+  return Math.min(Math.floor(beta / theta), n - 1);
+}
+/** 每個項目名稱距離最近一次「就吃這個」的天數。 */
+function recencyDays(history, nowTs) {
+  const today = dayNumber(nowTs);
+  const m = new Map();
+  for (const r of history) {
+    if (!r.accepted) continue;
+    const d = today - dayNumber(r.at);
+    const prev = m.get(r.itemName);
+    if (prev === undefined || d < prev) m.set(r.itemName, d);
+  }
+  return m;
+}
+/** 扇形配色：若 n mod 6 = 1，最後一格改用第 3 色，避免首尾同色相鄰。 */
+const colorIndex = (i, n) => (n % 6 === 1 && i === n - 1) ? 2 : i % 6;
+
+/* =====================================================================
+ * 彩蛋判定（純函式）
+ * ===================================================================== */
+const isNight = date => { const hr = date.getHours(); return hr >= 23 || hr < 4; };
+function isDestiny(results) {
+  if (results.length < 3) return false;
+  const [a, b, c] = results.slice(-3);
+  return a.wheelId === b.wheelId && b.wheelId === c.wheelId && a.name === b.name && b.name === c.name;
+}
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+const normKey = key => key.length === 1 ? key.toLowerCase() : key;
+/** 最近按下的鍵（最多 10 個）的結尾是否恰好是 Konami 序列。 */
+function konamiMatch(buf) {
+  const L = KONAMI.length;
+  return buf.length >= L && KONAMI.every((k, i) => buf[buf.length - L + i] === k);
+}
+
+/* =====================================================================
+ * 統計（純函式）
+ * ===================================================================== */
+function computeStats(history, nowTs, rangeDays) {
+  const from = dayNumber(nowTs) - (rangeDays - 1);
+  const inRange = history.filter(r => dayNumber(r.at) >= from);
+  const acc = inRange.filter(r => r.accepted);
+  const rej = inRange.filter(r => !r.accepted);
+  const count = arr => {
+    const m = new Map();
+    for (const r of arr) m.set(r.itemName, (m.get(r.itemName) || 0) + 1);
+    return [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'));
+  };
+  return {
+    total: acc.length,
+    byCat: CAT_IDS.map(c => [c, acc.filter(r => r.category === c).length]),
+    top: count(acc).slice(0, 5),
+    rejected: count(rej).slice(0, 3),
+  };
+}
+
+/* =====================================================================
+ * 驗證
+ * ===================================================================== */
+class DataError extends Error {}
+const bad = () => { throw new DataError('invalid'); };
+function uid(prefix) {
+  let s = '';
+  while (s.length < 8) s += randU32().toString(36);
+  return prefix + s.slice(0, 8);
+}
+function checkName(v, max = LIMITS.name) {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  const len = gLen(t);
+  return (len < 1 || len > max || CTRL.test(t)) ? null : t;
+}
+function checkEmoji(v) {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  if (t === '') return '';
+  if (t.length > 16 || gLen(t) !== 1 || CTRL.test(t) || !EMOJI_RE.test(t)) return null;
+  return t;
+}
+function checkItemFields(nm, em, cat, pr, wt, seenNames) {
+  const name = checkName(nm), emoji = checkEmoji(em);
+  if (name === null || emoji === null || seenNames.has(name) || !CAT_IDS.includes(cat)
+      || !isIntIn(pr, 1, 3) || !isIntIn(wt, 1, 5)) bad();
+  seenNames.add(name);
+  return { name, emoji, category: cat, price: pr, weight: wt };
+}
+/** 分享連結的精簡格式 {n, i:[[名稱, emoji, 類別, 價位, 權重], …]} */
+function validateCompact(o) {
+  if (!isPlainObj(o)) bad();
+  const name = checkName(o.n);
+  if (name === null) bad();
+  if (!Array.isArray(o.i) || o.i.length < LIMITS.itemsMin || o.i.length > LIMITS.itemsMax) bad();
+  const seen = new Set();
+  const items = o.i.map(a => {
+    if (!Array.isArray(a) || a.length !== 5) bad();
+    return { id: uid('i_'), ...checkItemFields(a[0], a[1], a[2], a[3], a[4], seen), enabled: true };
+  });
+  return { name, items };
+}
+/** 完整資料（localStorage 讀取與匯入備份共用）。 */
+function validateState(o) {
+  if (!isPlainObj(o) || o.version !== 1) bad();
+  if (!Array.isArray(o.wheels) || o.wheels.length < 1 || o.wheels.length > LIMITS.wheels) bad();
+  const wids = new Set();
+  const wheels = o.wheels.map(w => {
+    if (!isPlainObj(w) || typeof w.id !== 'string' || !/^w_[0-9a-z]{1,16}$/.test(w.id) || wids.has(w.id)) bad();
+    wids.add(w.id);
+    const name = checkName(w.name);
+    if (name === null) bad();
+    if (!Array.isArray(w.items) || w.items.length < LIMITS.itemsMin || w.items.length > LIMITS.itemsMax) bad();
+    const iids = new Set(), names = new Set();
+    const items = w.items.map(it => {
+      if (!isPlainObj(it) || typeof it.id !== 'string' || !/^i_[0-9a-z]{1,16}$/.test(it.id) || iids.has(it.id)) bad();
+      if (typeof it.enabled !== 'boolean') bad();
+      iids.add(it.id);
+      return { id: it.id, ...checkItemFields(it.name, it.emoji, it.category, it.price, it.weight, names), enabled: it.enabled };
+    });
+    return { id: w.id, name, items, createdAt: Number.isFinite(w.createdAt) ? w.createdAt : Date.now() };
+  });
+  if (!Array.isArray(o.history)) bad();
+  const history = o.history.map(r => {
+    if (!isPlainObj(r) || !Number.isFinite(r.at) || typeof r.wheelId !== 'string' || r.wheelId.length > 40
+        || typeof r.accepted !== 'boolean' || !CAT_IDS.includes(r.category)) bad();
+    const itemName = checkName(r.itemName);
+    if (itemName === null) bad();
+    return { at: r.at, wheelId: r.wheelId, itemName, category: r.category, accepted: r.accepted };
+  }).sort((a, b) => a.at - b.at).slice(-LIMITS.history);
+  const s = o.settings;
+  if (!isPlainObj(s) || typeof s.sound !== 'boolean' || !isIntIn(s.cooldownDays, 0, 7)
+      || typeof s.showPercent !== 'boolean' || !Array.isArray(s.unlockedEggs)) bad();
+  const unlockedEggs = [...new Set(s.unlockedEggs.filter(x => EGG_IDS.includes(x)))];
+  if (!THEMES.includes(s.theme) || (s.theme === 'midnight' && !unlockedEggs.includes('midnight'))) bad();
+  return {
+    version: 1,
+    activeWheelId: wids.has(o.activeWheelId) ? o.activeWheelId : wheels[0].id,
+    wheels, history,
+    settings: { sound: s.sound, cooldownDays: s.cooldownDays, showPercent: s.showPercent, theme: s.theme, unlockedEggs },
+  };
+}
+
+/* =====================================================================
+ * 分享連結編解碼
+ * 格式：#s=1.<deflate-raw 壓縮後的 base64url>；
+ * 瀏覽器不支援 CompressionStream 時改用 #s=0.<未壓縮 base64url>（解碼兩者都支援）。
+ * ===================================================================== */
+const HAS_CS = typeof CompressionStream === 'function' && typeof DecompressionStream === 'function';
+function b64urlEncode(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(str) {
+  if (!/^[A-Za-z0-9_-]+$/.test(str) || str.length % 4 === 1) bad();
+  let s = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  const bin = atob(s);
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+async function streamThrough(bytes, transform, maxOut) {
+  const reader = new Blob([bytes]).stream().pipeThrough(transform).getReader();
+  const chunks = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.length;
+    if (total > maxOut) { await reader.cancel(); bad(); }   // 防止壓縮炸彈
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+async function encodeCompact(obj) {
+  const raw = new TextEncoder().encode(JSON.stringify(obj));
+  if (HAS_CS) {
+    try { return '1.' + b64urlEncode(await streamThrough(raw, new CompressionStream('deflate-raw'), 1 << 20)); }
+    catch (e) { /* 不支援 deflate-raw 時改用未壓縮格式 */ }
+  }
+  return '0.' + b64urlEncode(raw);
+}
+const toCompact = w => ({ n: w.name, i: w.items.map(it => [it.name, it.emoji, it.category, it.price, it.weight]) });
+const encodeShare = w => encodeCompact(toCompact(w));
+async function decodeShare(code) {
+  try {
+    if (typeof code !== 'string' || code.length > LIMITS.shareCode) bad();
+    const dot = code.indexOf('.');
+    if (dot < 0) bad();
+    const ver = code.slice(0, dot);
+    let bytes = b64urlDecode(code.slice(dot + 1));
+    if (ver === '1') {
+      if (!HAS_CS) bad();
+      bytes = await streamThrough(bytes, new DecompressionStream('deflate-raw'), LIMITS.inflate);
+    } else if (ver !== '0' || bytes.length > LIMITS.inflate) bad();
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    return validateCompact(JSON.parse(text));
+  } catch (e) {
+    throw new DataError('連結已損壞');
+  }
+}
+
+/* =====================================================================
+ * 測試頁（網址加上 ?test）
+ * ===================================================================== */
+if (new URLSearchParams(location.search).has('test')) {
+  runTests();
+  return;
+}
+
+/* =====================================================================
+ * 狀態與儲存
+ * ===================================================================== */
+function makeWheel(id, name, rows) {
+  return {
+    id, name, createdAt: Date.now(),
+    items: rows.map(([n, e, c, p]) => ({ id: uid('i_'), name: n, emoji: e, category: c, price: p, weight: 1, enabled: true })),
+  };
+}
+function defaultData() {
+  return {
+    version: 1,
+    activeWheelId: 'w_default',
+    wheels: [makeWheel('w_default', '預設轉盤', DEFAULT_ITEMS)],
+    history: [],
+    settings: { sound: true, cooldownDays: 3, showPercent: true, theme: 'candy', unlockedEggs: [] },
+  };
+}
+
+const state = {
+  data: null,
+  spinning: false,
+  rotation: 0,
+  filters: { cats: new Set(), prices: new Set() },
+  excluded: new Set(),       // 本輪排除名單 E（item id）
+  temp: null,                // 朋友分享、試轉中的轉盤
+  pendingImport: null,
+  recentResults: [],         // 本次開啟頁面的抽中結果（彩蛋用）
+  respinStreak: 0,
+  current: null,             // 結果卡上的結果
+  lastLine: -1,
+  statsRange: 7,
+  editingItemId: null,
+  memoryOnly: false,
+  keyBuf: [],
+  centerTaps: [],
+};
+const data = () => state.data;
+const settings = () => state.data.settings;
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+  } catch (e) {
+    if (!state.memoryOnly) {
+      state.memoryOnly = true;
+      toast('無法儲存到瀏覽器，這次的資料只保留到關閉頁面為止');
+    }
+  }
+}
+function load() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); }
+  catch (e) { state.memoryOnly = true; }
+  if (raw === null) {
+    state.data = defaultData();
+    save();
+    if (state.memoryOnly) toast('無法使用瀏覽器儲存空間，這次的資料只保留到關閉頁面為止');
+    return;
+  }
+  try {
+    state.data = validateState(JSON.parse(raw));
+  } catch (e) {
+    try { localStorage.setItem(STORAGE_KEY + ':corrupt', raw); } catch (_) { /* 盡力備份 */ }
+    state.data = defaultData();
+    save();
+    toast('資料讀取失敗，已改用預設資料（舊資料另存為備份 key）');
+  }
+}
+
+/* =====================================================================
+ * UI 小工具
+ * ===================================================================== */
+let toastTimer = 0;
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
+}
+function announce(msg) {
+  const el = $('#live');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const theme = () => settings().theme;
+const anyDialogOpen = () => !!document.querySelector('dialog[open]');
+
+function confirmBox(text, okText = '確定', danger = false) {
+  return new Promise(resolve => {
+    const d = $('#confirmDlg'), ok = $('#confirmOk'), cancel = $('#confirmCancel');
+    $('#confirmText').textContent = text;
+    ok.textContent = okText;
+    ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+    let result = false;
+    const onOk = () => { result = true; d.close(); };
+    const onCancel = () => d.close();
+    const onClose = () => {
+      ok.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      d.removeEventListener('close', onClose);
+      resolve(result);
+    };
+    ok.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    d.addEventListener('close', onClose);
+    d.showModal();
+  });
+}
+function promptBox(label, initial, validate) {
+  return new Promise(resolve => {
+    const d = $('#promptDlg'), form = $('#promptForm'), input = $('#promptInput'), err = $('#promptError'), cancel = $('#promptCancel');
+    $('#promptLabel').textContent = label;
+    input.value = initial;
+    err.textContent = '';
+    let result = null;
+    const onSubmit = e => {
+      e.preventDefault();
+      const msg = validate(input.value);
+      if (msg) { err.textContent = msg; return; }
+      result = input.value.trim();
+      d.close();
+    };
+    const onCancel = () => d.close();
+    const onClose = () => {
+      form.removeEventListener('submit', onSubmit);
+      cancel.removeEventListener('click', onCancel);
+      d.removeEventListener('close', onClose);
+      resolve(result);
+    };
+    form.addEventListener('submit', onSubmit);
+    cancel.addEventListener('click', onCancel);
+    d.addEventListener('close', onClose);
+    d.showModal();
+    input.select();
+  });
+}
+const wheelNameError = v => checkName(v) === null ? '名稱需為 1–20 字' : '';
+
+/* =====================================================================
+ * 音效（Web Audio 即時合成）與震動
+ * ===================================================================== */
+let actx = null;
+function ensureAudio() {
+  if (!settings().sound) return null;
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+  }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function beep(ctx, freq, start, dur, type, vol) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(vol, start + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  o.connect(g).connect(ctx.destination);
+  o.start(start);
+  o.stop(start + dur + 0.02);
+}
+function tick() {
+  if (!settings().sound) return;
+  const ctx = ensureAudio();
+  if (ctx) beep(ctx, 1800, ctx.currentTime, 0.03, 'square', 0.05);
+  if (navigator.vibrate) navigator.vibrate(10);   // iOS Safari 不支援，會直接略過
+}
+function fanfare() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  [523.25, 659.25, 783.99].forEach((f, k) => beep(ctx, f, t + k * 0.12, 0.28, 'triangle', 0.16));
+}
+
+/* =====================================================================
+ * 撒彩帶（畫在結果卡內的全螢幕 canvas，才能蓋過 modal 背景）
+ * ===================================================================== */
+let confettiToken = 0;
+function confetti() {
+  const cv = $('#confetti');
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = window.innerWidth, H = window.innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const pal = PALETTES.candy.concat('#FF6F91', '#FFD166');
+  const ox = W / 2, oy = H * 0.42;
+  const ps = Array.from({ length: 120 }, () => ({
+    x: ox, y: oy, vx: (randUnit() - 0.5) * 16, vy: -(randUnit() * 12 + 4),
+    r: randUnit() * TAU, vr: (randUnit() - 0.5) * 0.4,
+    w: 6 + randUnit() * 5, h: 4 + randUnit() * 3, c: randomOf(pal),
+  }));
+  const token = ++confettiToken;
+  const start = performance.now(), DUR = 1500;
+  function frame(now) {
+    if (token !== confettiToken) return;
+    const t = now - start;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = t > DUR - 300 ? Math.max(0, (DUR - t) / 300) : 1;
+    for (const p of ps) {
+      p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    if (t < DUR) requestAnimationFrame(frame);
+    else ctx.clearRect(0, 0, W, H);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+ * 轉盤繪製
+ * ===================================================================== */
+const wheelCanvas = $('#wheel');
+const wctx = wheelCanvas.getContext('2d');
+let wheelSize = 0;
+function sizeWheel() {
+  const css = Math.max(120, Math.floor($('#wheelWrap').clientWidth));
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  wheelCanvas.width = Math.round(css * dpr);
+  wheelCanvas.height = Math.round(css * dpr);
+  wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  wheelSize = css;
+}
+function fitLabel(text, maxWidth, fs) {
+  let size = fs;
+  wctx.font = `700 ${size}px ${FONT}`;
+  while (size > 11 && wctx.measureText(text).width > maxWidth) {
+    size -= 1;
+    wctx.font = `700 ${size}px ${FONT}`;
+  }
+  if (wctx.measureText(text).width <= maxWidth) return text;
+  const g = graphemes(text);
+  while (g.length > 1 && wctx.measureText(g.join('') + '…').width > maxWidth) g.pop();
+  return g.join('') + '…';
+}
+function drawWheel(items, R) {
+  const s = wheelSize, c = s / 2, r = c - 4;
+  const th = theme(), pal = PALETTES[th], ink = WHEEL_INK[th];
+  wctx.clearRect(0, 0, s, s);
+  const n = items.length;
+  if (n === 0) {
+    wctx.beginPath(); wctx.arc(c, c, r, 0, TAU);
+    wctx.fillStyle = th === 'candy' ? '#EFE4E8' : '#3A3154'; wctx.fill();
+    return;
+  }
+  const theta = TAU / n;
+  const hub = 52;
+  for (let i = 0; i < n; i++) {
+    const a0 = i * theta + R;
+    wctx.beginPath();
+    wctx.moveTo(c, c);
+    wctx.arc(c, c, r, a0, a0 + theta);
+    wctx.closePath();
+    wctx.fillStyle = pal[colorIndex(i, n)];
+    wctx.fill();
+    if (n > 1) { wctx.strokeStyle = THEME_BG[th]; wctx.lineWidth = 2; wctx.stroke(); }
+  }
+  for (let i = 0; i < n; i++) {
+    const it = items[i];
+    const mid = i * theta + R + theta / 2;
+    const chord = n === 1 ? r : 2 * (r * 0.62) * Math.sin(theta / 2);
+    const fs = Math.max(11, Math.min(18, chord * 0.55));
+    const emojiOnly = n > 45;
+    const raw = emojiOnly ? (it.emoji || '•') : ((it.emoji ? it.emoji + ' ' : '') + it.name);
+    wctx.save();
+    wctx.translate(c, c);
+    wctx.rotate(mid);
+    wctx.fillStyle = ink;
+    wctx.textAlign = 'right';
+    wctx.textBaseline = 'middle';
+    const label = fitLabel(raw, r - 16 - hub, fs);
+    wctx.fillText(label, r - 16, 0);
+    wctx.restore();
+  }
+  wctx.beginPath(); wctx.arc(c, c, r, 0, TAU);
+  wctx.lineWidth = 6; wctx.strokeStyle = THEME_BG[th]; wctx.stroke();
+}
+function fadeWheel() {
+  wheelCanvas.classList.remove('fade');
+  void wheelCanvas.offsetWidth;
+  wheelCanvas.classList.add('fade');
+}
+
+/* =====================================================================
+ * 候選集合、權重、輪次
+ * ===================================================================== */
+const activeWheel = () => state.temp || data().wheels.find(w => w.id === data().activeWheelId) || data().wheels[0];
+const activeWheelKey = () => state.temp ? 'temp' : data().activeWheelId;
+function candidates() {
+  const { cats, prices } = state.filters;
+  return activeWheel().items.filter(it => it.enabled
+    && (cats.size === 0 || cats.has(it.category))
+    && (prices.size === 0 || prices.has(it.price))
+    && !state.excluded.has(it.id));
+}
+function weightsFor(items) {
+  const C = settings().cooldownDays;
+  const days = recencyDays(data().history, Date.now());
+  return items.map(it => effectiveWeight(it.weight, days.has(it.name) ? days.get(it.name) : null, C));
+}
+/** 結束本輪：清空排除名單與連續否決次數。 */
+function endRound() {
+  state.excluded.clear();
+  state.respinStreak = 0;
+}
+function addRecord(item, accepted) {
+  if (state.temp) return;   // 試轉朋友的轉盤不寫入紀錄
+  const h = data().history;
+  h.push({ at: Date.now(), wheelId: data().activeWheelId, itemName: item.name, category: item.category, accepted });
+  if (h.length > LIMITS.history) h.splice(0, h.length - LIMITS.history);
+}
+
+/* =====================================================================
+ * 轉動
+ * ===================================================================== */
+async function spin() {
+  if (state.spinning || anyDialogOpen()) return;
+  const items = candidates();
+  if (items.length === 0) {
+    announce('沒有符合條件的選項');
+    $('#emptyMsg').hidden = false;
+    return;
+  }
+  if (items.length === 1) {
+    ensureAudio();
+    showResult(items[0], { onlyOne: true });
+    return;
+  }
+  ensureAudio();   // 必須在使用者手勢內建立 AudioContext
+  const n = items.length;
+  const theta = TAU / n;
+  const i = pickIndex(weightsFor(items));
+  const alpha = i * theta + theta * (0.1 + 0.8 * randUnit());
+  const reduce = reducedMotion();
+  const N = reduce ? 1 : 5;
+  const T = reduce ? 800 : 4500;
+  const R0 = state.rotation;
+  const delta = spinDelta(R0, alpha, N);
+
+  setSpinning(true);
+  let lastIdx = pointerIndex(R0, n);
+  let lastTickAt = -Infinity;
+  const start = performance.now();
+  await new Promise(resolve => {
+    function frame(now) {
+      const t = Math.min((now - start) / T, 1);
+      const R = R0 + delta * (1 - Math.pow(1 - t, 3));
+      drawWheel(items, R);
+      const idx = pointerIndex(R, n);
+      if (idx !== lastIdx) {
+        lastIdx = idx;
+        if (now - lastTickAt >= 40) { lastTickAt = now; tick(); }
+      }
+      if (t < 1) requestAnimationFrame(frame); else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+  state.rotation = mod(R0 + delta, TAU);
+  drawWheel(items, state.rotation);
+  setSpinning(false);
+
+  const p = $('#pointer');
+  p.classList.remove('bounce'); void p.getBoundingClientRect(); p.classList.add('bounce');
+  showResult(items[i], { celebrate: !reduce });
+}
+
+function setSpinning(on) {
+  state.spinning = on;
+  document.body.classList.toggle('is-spinning', on);
+  $('#spinBtn').setAttribute('aria-disabled', on ? 'true' : 'false');
+  renderHeader();
+  renderSpinControls();
+  renderList();
+}
+
+function showResult(item, opts = {}) {
+  const { onlyOne = false, noRespin = false, celebrate = false } = opts;
+  state.current = item;
+  state.recentResults.push({ wheelId: activeWheelKey(), name: item.name });
+  if (state.recentResults.length > 10) state.recentResults.shift();
+  const destiny = isDestiny(state.recentResults);
+
+  let line;
+  if (onlyOne) line = TXT.onlyOne;
+  else if (destiny) line = TXT.destiny;
+  else {
+    let k = randIntBelow(LINES.length - 1);
+    if (state.lastLine >= 0 && k >= state.lastLine) k += 1;   // 與上一句不同
+    if (state.lastLine < 0) k = randIntBelow(LINES.length);
+    state.lastLine = k;
+    line = LINES[k];
+  }
+  const fill = s => s.split('{name}').join(item.name);
+  $('#resultEmoji').textContent = item.emoji || '🍽️';
+  $('#resultName').textContent = item.name;
+  $('#resultLine').textContent = fill(line);
+  const night = $('#resultNight');
+  if (isNight(new Date())) { night.hidden = false; night.textContent = fill(randomOf(NIGHT_LINES)); }
+  else night.hidden = true;
+  const single = onlyOne || noRespin;
+  $('#respinBtn').hidden = single;
+  $('#resultActions').classList.toggle('single', single);
+  const dlg = $('#resultDlg');
+  dlg.classList.toggle('destiny', destiny);
+  dlg.showModal();
+  $('#acceptBtn').focus();
+  if (celebrate) confetti();
+  fanfare();
+  announce(`結果：${item.name}`);
+}
+
+function accept() {
+  const item = state.current;
+  if (!item) return;
+  state.current = null;
+  addRecord(item, true);
+  endRound();
+  save();
+  $('#resultDlg').close();
+  renderAll();
+}
+function respin() {
+  const item = state.current;
+  if (!item) return;
+  state.current = null;
+  addRecord(item, false);
+  state.excluded.add(item.id);
+  state.respinStreak += 1;
+  save();
+  $('#resultDlg').close();
+  renderAll();
+  if (state.respinStreak >= 5 && candidates().length >= 2) {
+    state.respinStreak = 0;
+    $('#pickyDlg').showModal();
+    return;
+  }
+  spin();
+}
+
+/* =====================================================================
+ * 渲染
+ * ===================================================================== */
+function applyTheme() {
+  document.documentElement.dataset.theme = theme();
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', THEME_BG[theme()]);
+}
+function renderHeader() {
+  const sel = $('#wheelSelect');
+  sel.replaceChildren();
+  if (state.temp) sel.append(h('option', { value: 'temp', text: '試轉：' + state.temp.name }));
+  for (const w of data().wheels) sel.append(h('option', { value: w.id, text: w.name }));
+  sel.value = activeWheelKey();
+  sel.disabled = state.spinning;
+  const snd = $('#soundBtn');
+  snd.textContent = settings().sound ? '🔊' : '🔇';
+  snd.setAttribute('aria-pressed', String(settings().sound));
+}
+function renderSpinControls() {
+  const lock = state.spinning;
+  const cats = $('#catFilters'), prices = $('#priceFilters');
+  cats.replaceChildren(...CATS.map(([id, label]) => h('button', {
+    type: 'button', class: 'chip', text: label, disabled: lock,
+    'aria-pressed': String(state.filters.cats.has(id)),
+    onclick: () => toggleFilter('cats', id),
+  })));
+  prices.replaceChildren(...[1, 2, 3].map(p => h('button', {
+    type: 'button', class: 'chip', text: PRICE_LABEL[p], disabled: lock,
+    'aria-label': `價位 ${PRICE_LABEL[p]}`,
+    'aria-pressed': String(state.filters.prices.has(p)),
+    onclick: () => toggleFilter('prices', p),
+  })));
+  $('#tempBanner').hidden = !state.temp;
+  if (state.temp) $('#tempText').textContent = `正在試轉朋友的轉盤「${state.temp.name}」，結果不會記錄。`;
+  $('#tempExit').disabled = lock;
+  const wheel = activeWheel();
+  const ex = wheel.items.filter(it => state.excluded.has(it.id));
+  $('#excludedBar').hidden = ex.length === 0;
+  $('#excludedText').textContent = '本輪已排除：' + ex.map(it => it.name).join('、');
+  $('#restoreExcluded').disabled = lock;
+  const n = candidates().length;
+  $('#emptyMsg').hidden = n !== 0;
+  $('#clearFilters').disabled = lock;
+  $('#wheelHint').textContent = n === 0 ? '' : n === 1 ? '只剩一項，按「轉」直接決定' : `本輪候選 ${n} 項`;
+}
+function renderSpin(fade = false) {
+  renderSpinControls();
+  if (!state.spinning) {
+    if (fade) fadeWheel();
+    drawWheel(candidates(), state.rotation);
+  }
+}
+function toggleFilter(kind, v) {
+  if (state.spinning) return;
+  const set = state.filters[kind];
+  if (set.has(v)) set.delete(v); else set.add(v);
+  endRound();
+  renderSpin(true);
+  renderList();
+}
+
+function iconBtn(label, icon, onclick, disabled) {
+  return h('button', { type: 'button', class: 'icon-sm', 'aria-label': label, title: label, text: icon, onclick, disabled });
+}
+function renderList() {
+  const root = $('#listRoot');
+  const w = activeWheel();
+  const ro = !!state.temp;
+  const lock = state.spinning;
+  const card = h('div', { class: 'card' });
+  card.append(h('h2', { text: w.name }), h('p', { class: 'muted', text: `${w.items.length} 項（每個轉盤 2–50 項）` }));
+
+  if (ro) {
+    card.append(
+      h('p', { class: 'muted', text: '這是朋友分享的轉盤，加入後才能編輯。' }),
+      h('div', { class: 'tool-row' }, h('button', { type: 'button', class: 'btn btn-primary', text: '加入我的轉盤', onclick: addTempWheel, disabled: lock })),
+    );
+  } else {
+    const onlyOne = data().wheels.length <= 1;
+    card.append(h('div', { class: 'tool-row' },
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '新增轉盤', onclick: newWheel, disabled: lock }),
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '重新命名', onclick: renameWheel, disabled: lock }),
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '複製', onclick: copyWheel, disabled: lock }),
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '刪除轉盤', onclick: deleteWheel, disabled: lock || onlyOne }),
+    ));
+    if (onlyOne) card.append(h('p', { class: 'reason', text: '至少要保留一個轉盤，所以無法刪除。' }));
+  }
+
+  const show = settings().showPercent;
+  const cands = candidates();
+  const ws = weightsFor(cands);
+  const W = ws.reduce((a, b) => a + b, 0);
+  const pmap = new Map(cands.map((it, k) => [it.id, ws[k] / W]));
+  if (show) card.append(h('p', { class: 'muted', text: '百分比為目前的抽中機率（含篩選、近期權重與本輪排除）；「—」表示不在本輪候選中。' }));
+
+  const ul = h('ul', { class: 'items' });
+  const atMin = w.items.length <= LIMITS.itemsMin;
+  for (const it of w.items) {
+    const stars = h('div', { class: 'stars', role: 'group', 'aria-label': `${it.name} 的權重` });
+    for (let k = 1; k <= 5; k++) {
+      stars.append(h('button', {
+        type: 'button', class: 'star', text: k <= it.weight ? '★' : '☆',
+        'aria-label': `權重 ${k}`, 'aria-pressed': String(k === it.weight), disabled: ro || lock,
+        onclick: () => { it.weight = k; mutate(); },
+      }));
+    }
+    const pct = !show ? null : h('span', { class: 'item-pct', text: pmap.has(it.id) ? (pmap.get(it.id) * 100).toFixed(1) + '%' : '—' });
+    ul.append(h('li', { class: 'item' + (it.enabled ? '' : ' off') },
+      h('div', { class: 'item-main' },
+        h('input', { type: 'checkbox', checked: it.enabled, disabled: ro || lock, 'aria-label': `啟用 ${it.name}`,
+          onchange: e => { it.enabled = e.target.checked; mutate(); } }),
+        h('span', { class: 'item-emoji', 'aria-hidden': 'true', text: it.emoji || '·' }),
+        h('div', { class: 'item-info' },
+          h('div', { class: 'item-name', text: it.name }),
+          h('div', { class: 'item-meta', text: `${CAT_LABEL[it.category]} · ${PRICE_LABEL[it.price]}` })),
+        pct),
+      h('div', { class: 'item-sub' },
+        stars,
+        iconBtn(`編輯 ${it.name}`, '✏️', () => openItemDialog(it), ro || lock),
+        iconBtn(`刪除 ${it.name}`, '🗑️', () => deleteItem(it), ro || lock || atMin)),
+    ));
+  }
+  card.append(ul);
+  if (!ro) {
+    const full = w.items.length >= LIMITS.itemsMax;
+    card.append(h('div', { class: 'tool-row' },
+      h('button', { type: 'button', class: 'btn btn-primary', text: '＋ 新增項目', onclick: () => openItemDialog(null), disabled: lock || full })));
+    if (full) card.append(h('p', { class: 'reason', text: '已達上限 50 項。' }));
+    if (atMin) card.append(h('p', { class: 'reason', text: '至少需要 2 項，所以目前無法刪除項目。' }));
+  }
+  root.replaceChildren(card);
+}
+
+function renderHistory() {
+  const root = $('#historyRoot');
+  const hist = data().history;
+  const st = computeStats(hist, Date.now(), state.statsRange);
+  const card = h('div', { class: 'card' });
+  card.append(h('h2', { text: '統計' }),
+    h('div', { class: 'seg', role: 'group', 'aria-label': '統計範圍' },
+      ...[7, 30].map(d => h('button', { type: 'button', text: `近 ${d} 天`, 'aria-pressed': String(state.statsRange === d),
+        onclick: () => { state.statsRange = d; renderHistory(); } }))));
+  if (st.total === 0 && st.rejected.length === 0) {
+    card.append(h('p', { class: 'muted', text: '這段期間還沒有紀錄。轉一次，按「就吃這個」就會出現在這裡。' }));
+  } else {
+    card.append(h('h3', { text: `各類別（共吃了 ${st.total} 次）` }));
+    const max = Math.max(1, ...st.byCat.map(x => x[1]));
+    for (const [c, k] of st.byCat) {
+      card.append(h('div', { class: 'bar-row' },
+        h('span', { text: CAT_LABEL[c] }),
+        h('div', { class: 'bar-track' }, h('div', { class: 'bar', style: `width:${(k / max) * 100}%` })),
+        h('span', { class: 'bar-num', text: String(k) })));
+    }
+    card.append(h('h3', { text: '最常吃的前 5 名' }));
+    card.append(st.top.length
+      ? h('ol', { class: 'rank' }, ...st.top.map(([n, k]) => h('li', { text: `${n}（${k} 次）` })))
+      : h('p', { class: 'muted', text: '還沒有接受過的結果。' }));
+    card.append(h('h3', { text: '最常被否決的前 3 名' }));
+    card.append(st.rejected.length
+      ? h('ol', { class: 'rank' }, ...st.rejected.map(([n, k]) => h('li', { text: `${n}（${k} 次）` })))
+      : h('p', { class: 'muted', text: '沒有被否決過，很好養。' }));
+  }
+
+  const list = h('div', { class: 'card' }, h('h2', { text: '紀錄' }));
+  if (hist.length === 0) {
+    list.append(h('p', { class: 'muted', text: '目前沒有紀錄。' }));
+  } else {
+    const groups = new Map();
+    for (let k = hist.length - 1; k >= 0; k--) {
+      const r = hist[k], key = dayNumber(r.at);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(r);
+    }
+    for (const recs of groups.values()) {
+      const d = new Date(recs[0].at);
+      const label = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}（${'日一二三四五六'[d.getDay()]}）`;
+      list.append(h('h3', { text: label }), h('ul', { class: 'hist-list' }, ...recs.map(r => {
+        const t = new Date(r.at);
+        return h('li', { class: r.accepted ? '' : 'rej' },
+          h('time', { datetime: t.toISOString(), text: `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}` }),
+          h('span', { text: r.itemName }),
+          r.accepted ? null : h('em', { class: 'tag', text: '否決' }));
+      })));
+    }
+    list.append(h('div', { class: 'tool-row' }, h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '清除所有紀錄', onclick: clearHistory })));
+  }
+  root.replaceChildren(card, list);
+}
+
+function renderSettings() {
+  const root = $('#settingsRoot');
+  const s = settings();
+  const row = (label, control) => h('label', { class: 'setting' }, h('span', { text: label }), control);
+  const card = h('div', { class: 'card' }, h('h2', { text: '設定' }),
+    row('音效與震動', h('input', { type: 'checkbox', checked: s.sound, onchange: e => { s.sound = e.target.checked; save(); renderHeader(); } })),
+    row('近期權重冷卻天數', (() => {
+      const sel = h('select', { onchange: e => { s.cooldownDays = Number(e.target.value); save(); renderList(); } },
+        ...Array.from({ length: 8 }, (_, d) => h('option', { value: String(d), text: d === 0 ? '關閉' : `${d} 天` })));
+      sel.value = String(s.cooldownDays);
+      return sel;
+    })()),
+    row('在清單顯示機率', h('input', { type: 'checkbox', checked: s.showPercent, onchange: e => { s.showPercent = e.target.checked; save(); renderList(); } })),
+  );
+  if (s.unlockedEggs.includes('midnight')) {
+    const sel = h('select', { onchange: e => { s.theme = e.target.value; save(); applyTheme(); renderAll(); } },
+      h('option', { value: 'candy', text: '糖果（預設）' }), h('option', { value: 'midnight', text: '宵夜模式' }));
+    sel.value = s.theme;
+    card.append(row('主題', sel));
+  }
+  const data2 = h('div', { class: 'card' }, h('h2', { text: '資料' }),
+    h('p', { class: 'muted', text: '所有資料只存在這個瀏覽器裡，清除瀏覽器資料就會消失。定期匯出備份是唯一的保險。' }),
+    h('div', { class: 'tool-row' },
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '匯出備份', onclick: exportBackup }),
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '匯入備份', onclick: () => $('#importFile').click() }),
+      h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: '還原內建清單', onclick: restoreDefaults })),
+    state.memoryOnly ? h('p', { class: 'reason', text: '目前無法寫入瀏覽器儲存空間，資料只保留到關閉頁面為止。' }) : null,
+  );
+  root.replaceChildren(card, data2);
+}
+
+function renderAll(fade = false) {
+  applyTheme();
+  renderHeader();
+  renderSpin(fade);
+  renderList();
+  renderHistory();
+  renderSettings();
+}
+
+/* =====================================================================
+ * 清單與轉盤操作
+ * ===================================================================== */
+function mutate() {
+  if (state.spinning) return;
+  save();
+  endRound();       // 編輯清單會結束本輪
+  renderAll(true);
+}
+function uniqueWheelName(base) {
+  const names = new Set(data().wheels.map(w => w.name));
+  if (!names.has(base)) return base;
+  for (let k = 2; ; k++) {
+    const suf = `(${k})`;
+    const cand = graphemes(base).slice(0, LIMITS.name - suf.length).join('') + suf;
+    if (!names.has(cand)) return cand;
+  }
+}
+function switchWheel(id) {
+  state.temp = null;
+  data().activeWheelId = id;
+  endRound();
+  save();
+  renderAll(true);
+}
+async function newWheel() {
+  if (state.spinning) return;
+  const name = await promptBox('新轉盤名稱（1–20 字）', '新轉盤', wheelNameError);
+  if (name === null) return;
+  const w = makeWheel(uid('w_'), uniqueWheelName(name), [['選項 1', '', 'snack', 1], ['選項 2', '', 'snack', 1]]);
+  data().wheels.push(w);
+  switchWheel(w.id);
+  toast('已新增轉盤，先到清單編輯項目吧');
+}
+async function renameWheel() {
+  if (state.spinning) return;
+  const w = activeWheel();
+  const name = await promptBox('轉盤名稱（1–20 字）', w.name, wheelNameError);
+  if (name === null || name === w.name) return;
+  w.name = name;
+  save();
+  renderAll();
+}
+function copyWheel() {
+  if (state.spinning) return;
+  const w = activeWheel();
+  const base = graphemes(w.name).slice(0, LIMITS.name - 4).join('') + '（複製）';
+  const copy = { id: uid('w_'), name: uniqueWheelName(base), createdAt: Date.now(), items: w.items.map(it => ({ ...it, id: uid('i_') })) };
+  data().wheels.push(copy);
+  switchWheel(copy.id);
+  toast('已複製轉盤');
+}
+async function deleteWheel() {
+  if (state.spinning || data().wheels.length <= 1) return;
+  const w = activeWheel();
+  if (!await confirmBox(`刪除轉盤「${w.name}」？這個動作無法復原。`, '刪除', true)) return;
+  data().wheels = data().wheels.filter(x => x.id !== w.id);
+  switchWheel(data().wheels[0].id);
+}
+async function deleteItem(it) {
+  const w = activeWheel();
+  if (state.spinning || w.items.length <= LIMITS.itemsMin) return;
+  if (!await confirmBox(`刪除「${it.name}」？`, '刪除', true)) return;
+  w.items = w.items.filter(x => x.id !== it.id);
+  mutate();
+}
+function openItemDialog(item) {
+  if (state.spinning || state.temp) return;
+  const form = $('#itemForm');
+  state.editingItemId = item ? item.id : null;
+  $('#itemDlgTitle').textContent = item ? '編輯項目' : '新增項目';
+  form.elements.name.value = item ? item.name : '';
+  form.elements.emoji.value = item ? item.emoji : '';
+  form.elements.category.value = item ? item.category : 'rice';
+  form.elements.price.value = String(item ? item.price : 1);
+  form.elements.weight.value = String(item ? item.weight : 1);
+  $('#itemError').textContent = '';
+  $('#itemDlg').showModal();
+  form.elements.name.focus();
+}
+function submitItem(e) {
+  e.preventDefault();
+  const form = e.target, w = activeWheel(), err = $('#itemError');
+  const editing = w.items.find(x => x.id === state.editingItemId) || null;
+  const name = checkName(form.elements.name.value);
+  if (name === null) { err.textContent = '名稱需為 1–20 字，且不能有控制字元'; return; }
+  if (w.items.some(x => x.name === name && x !== editing)) { err.textContent = '這個轉盤已經有同名的項目'; return; }
+  const emoji = checkEmoji(form.elements.emoji.value);
+  if (emoji === null) { err.textContent = '請輸入單一個 emoji，或留白'; return; }
+  const category = form.elements.category.value;
+  const price = Number(form.elements.price.value);
+  const weight = Number(form.elements.weight.value);
+  if (!CAT_IDS.includes(category) || !isIntIn(price, 1, 3) || !isIntIn(weight, 1, 5)) { err.textContent = '欄位值不正確'; return; }
+  if (editing) Object.assign(editing, { name, emoji, category, price, weight });
+  else {
+    if (w.items.length >= LIMITS.itemsMax) { err.textContent = '已達上限 50 項'; return; }
+    w.items.push({ id: uid('i_'), name, emoji, category, price, weight, enabled: true });
+  }
+  $('#itemDlg').close();
+  mutate();
+}
+function restoreDefaults() {
+  if (state.spinning) return;
+  const w = makeWheel(uid('w_'), uniqueWheelName('內建清單'), DEFAULT_ITEMS);
+  data().wheels.push(w);
+  switchWheel(w.id);
+  toast('已新增「' + w.name + '」轉盤');
+}
+async function clearHistory() {
+  if (!await confirmBox('清除所有紀錄？統計與近期權重都會重置，無法復原。', '清除', true)) return;
+  data().history = [];
+  save();
+  renderAll();
+}
+
+/* =====================================================================
+ * 備份
+ * ===================================================================== */
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(data(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  const a = h('a', { href: url, download: `food-choice-backup-${stamp}.json` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function importBackup(file) {
+  let parsed;
+  try {
+    if (file.size > 2 * 1024 * 1024) bad();
+    parsed = validateState(JSON.parse(await file.text()));
+  } catch (e) {
+    toast('備份檔格式不正確，沒有匯入任何資料');
+    return;
+  }
+  if (!await confirmBox('匯入會取代目前所有轉盤、紀錄與設定，確定嗎？', '匯入', true)) return;
+  state.data = parsed;
+  state.temp = null;
+  endRound();
+  save();
+  renderAll(true);
+  toast('匯入完成');
+}
+
+/* =====================================================================
+ * 分享
+ * ===================================================================== */
+const baseUrl = () => location.href.split('#')[0];
+async function wheelLink(w) {
+  return baseUrl() + '#s=' + await encodeShare(w);
+}
+async function shareOrCopy(title, text, url) {
+  if (navigator.share) {
+    try { await navigator.share({ title, text, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  const all = text + '\n' + url;
+  try {
+    await navigator.clipboard.writeText(all);
+    toast('已複製');
+  } catch (e) {
+    $('#linkText').value = all;
+    $('#linkDlg').showModal();
+    $('#linkText').select();
+  }
+}
+async function shareWheel() {
+  const w = activeWheel();
+  const url = await wheelLink(w);
+  if (url.length > LIMITS.shareUrl) toast('轉盤太大，部分 App 可能截斷連結');
+  await shareOrCopy('吃什麼轉盤', `來轉轉看「${w.name}」！`, url);
+}
+async function shareResult() {
+  const item = state.current;
+  if (!item) return;
+  const url = await wheelLink(activeWheel());
+  await shareOrCopy('吃什麼轉盤', `我們轉到了：${item.name}！`, url);
+}
+async function handleHash() {
+  const m = location.hash.match(/^#s=(.+)$/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  try {
+    const w = await decodeShare(m[1]);
+    state.pendingImport = w;
+    $('#importText').textContent = `朋友分享了轉盤「${w.name}」（${w.items.length} 項）`;
+    if (!anyDialogOpen()) $('#importDlg').showModal();
+  } catch (e) {
+    toast('連結已損壞，無法開啟這個轉盤');
+  }
+}
+function addWheelFrom(src) {
+  const w = { id: uid('w_'), name: uniqueWheelName(src.name), createdAt: Date.now(), items: src.items.map(it => ({ ...it, id: uid('i_') })) };
+  data().wheels.push(w);
+  switchWheel(w.id);
+  toast(`已加入「${w.name}」`);
+}
+function addTempWheel() {
+  if (!state.temp || state.spinning) return;
+  addWheelFrom(state.temp);
+}
+
+/* =====================================================================
+ * 彩蛋：宵夜模式
+ * ===================================================================== */
+function unlockMidnight() {
+  const s = settings();
+  if (!s.unlockedEggs.includes('midnight')) s.unlockedEggs.push('midnight');
+  s.theme = 'midnight';
+  save();
+  renderAll(true);
+  toast(TXT.unlock);
+  announce(TXT.unlock);
+}
+
+/* =====================================================================
+ * 事件綁定
+ * ===================================================================== */
+function setTab(tab) {
+  document.body.dataset.tab = tab;
+  for (const b of document.querySelectorAll('nav.tabs button')) {
+    if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  }
+  if (tab === 'spin') requestAnimationFrame(() => { sizeWheel(); renderSpin(); });
+}
+
+function bind() {
+  for (const b of document.querySelectorAll('nav.tabs button')) b.addEventListener('click', () => setTab(b.dataset.tab));
+
+  $('#spinBtn').addEventListener('click', spin);
+  // 連點轉盤中心 7 下（2 秒內）解鎖宵夜模式；第一下會開始轉，其餘在轉動中只計數。
+  $('#spinBtn').addEventListener('pointerdown', () => {
+    const now = performance.now();
+    state.centerTaps = state.centerTaps.filter(t => now - t < 2000);
+    state.centerTaps.push(now);
+    if (state.centerTaps.length >= 7) { state.centerTaps = []; unlockMidnight(); }
+  });
+
+  $('#wheelSelect').addEventListener('change', e => {
+    if (state.spinning) { renderHeader(); return; }
+    if (e.target.value === 'temp') return;
+    switchWheel(e.target.value);
+  });
+  $('#soundBtn').addEventListener('click', () => {
+    settings().sound = !settings().sound;
+    save();
+    renderHeader();
+    renderSettings();
+  });
+  $('#shareBtn').addEventListener('click', shareWheel);
+  $('#tempExit').addEventListener('click', () => { if (!state.spinning) switchWheel(data().activeWheelId); });
+  $('#restoreExcluded').addEventListener('click', () => {
+    if (state.spinning) return;
+    state.excluded.clear();   // 全部放回：清空 E，但不結束本輪
+    renderSpin(true);
+    renderList();
+  });
+  $('#clearFilters').addEventListener('click', () => {
+    if (state.spinning) return;
+    state.filters.cats.clear();
+    state.filters.prices.clear();
+    endRound();
+    renderSpin(true);
+    renderList();
+  });
+
+  $('#acceptBtn').addEventListener('click', accept);
+  $('#respinBtn').addEventListener('click', respin);
+  $('#shareResultBtn').addEventListener('click', shareResult);
+  // 用 Esc 關閉結果卡：不寫紀錄、不排除，本輪照舊。
+  // 若關閉事件抵達時結果卡已被重新打開（例如再轉後只剩一項、直接顯示），不可清掉新結果。
+  $('#resultDlg').addEventListener('close', () => {
+    if ($('#resultDlg').open) return;
+    state.current = null;
+    confettiToken++;
+    if (state.pendingImport && !anyDialogOpen()) $('#importDlg').showModal();
+  });
+
+  $('#pickyAgain').addEventListener('click', () => { $('#pickyDlg').close(); spin(); });
+  $('#pickyDecide').addEventListener('click', () => {
+    $('#pickyDlg').close();
+    const items = candidates();
+    if (items.length === 0) return;
+    showResult(items[pickIndex(weightsFor(items))], { noRespin: true });
+  });
+
+  $('#importCancel').addEventListener('click', () => { state.pendingImport = null; $('#importDlg').close(); });
+  $('#importTry').addEventListener('click', () => {
+    const w = state.pendingImport;
+    state.pendingImport = null;
+    $('#importDlg').close();
+    if (!w || state.spinning) return;
+    state.temp = { ...w, id: 'temp' };
+    endRound();
+    setTab('spin');
+    renderAll(true);
+  });
+  $('#importAdd').addEventListener('click', () => {
+    const w = state.pendingImport;
+    state.pendingImport = null;
+    $('#importDlg').close();
+    if (!w || state.spinning) return;
+    addWheelFrom(w);
+    setTab('spin');
+  });
+
+  const catSel = $('#itemForm').elements.category;
+  catSel.replaceChildren(...CATS.map(([id, label]) => h('option', { value: id, text: label })));
+  $('#itemForm').addEventListener('submit', submitItem);
+  $('#itemCancel').addEventListener('click', () => $('#itemDlg').close());
+  $('#linkClose').addEventListener('click', () => $('#linkDlg').close());
+
+  $('#importFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (f) importBackup(f);
+  });
+
+  document.addEventListener('keydown', e => {
+    const tag = e.target && e.target.tagName;
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    if (!typing) {
+      state.keyBuf.push(normKey(e.key));
+      if (state.keyBuf.length > KONAMI.length) state.keyBuf.shift();
+      if (konamiMatch(state.keyBuf)) { state.keyBuf = []; unlockMidnight(); return; }
+    }
+    // 焦點不在任何控制項上時，空白鍵或 Enter 也能轉
+    if ((e.key === ' ' || e.key === 'Enter') && e.target === document.body && !anyDialogOpen()) {
+      const spinVisible = document.body.dataset.tab === 'spin' || window.matchMedia('(min-width: 900px)').matches;
+      if (spinVisible) { e.preventDefault(); spin(); }
+    }
+  });
+
+  new ResizeObserver(() => {
+    sizeWheel();
+    if (!state.spinning) drawWheel(candidates(), state.rotation);
+  }).observe($('#wheelWrap'));
+  window.addEventListener('hashchange', handleHash);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!state.spinning) renderSpin(); });
+}
+
+/* =====================================================================
+ * 啟動
+ * ===================================================================== */
+load();
+bind();
+sizeWheel();
+setTab('spin');
+renderAll();
+handleHash();
+
+/* =====================================================================
+ * 自動測試（規格書第 8 節）
+ * ===================================================================== */
+async function runTests() {
+  const results = [];
+  const check = (name, pass, detail = '') => results.push({ name, pass: !!pass, detail });
+  const safe = async (name, fn) => {
+    try { await fn(); } catch (e) { check(name, false, '例外：' + (e && e.message)); }
+  };
+
+  await safe('抽選映射精確（窮舉）', () => {
+    for (const ws of [[1, 2, 3, 4], [5], [3, 1, 4, 1, 5, 9, 2, 6], [2, 8, 8, 8, 1]]) {
+      const W = ws.reduce((a, b) => a + b, 0);
+      const cnt = ws.map(() => 0);
+      for (let r = 0; r < W; r++) cnt[indexFromR(ws, r)]++;
+      check(`抽選映射精確：權重 [${ws}] 每個 i 被映到 w_i 次`, cnt.every((c, i) => c === ws[i]), `次數 [${cnt}]`);
+    }
+  });
+
+  await safe('拒絕取樣', () => {
+    for (const W of [3, 7, 2000]) {
+      const L = TWO32 - (TWO32 % W);
+      check(`拒絕取樣：W = ${W} 時 L 是 W 的倍數且 L > 2^32 − W`, L % W === 0 && L > TWO32 - W, `L = ${L}`);
+    }
+    const W = 3, L = TWO32 - (TWO32 % W);
+    const seq = [L, TWO32 - 1, 10];      // 兩個 ≥ L 的值應被拒絕，第三個接受
+    let used = 0;
+    const r = randIntBelow(W, () => seq[used++]);
+    check('拒絕取樣：x ≥ L 時重抽，接受第一個 x < L', r === 10 % 3 && used === 3, `r = ${r}，取用 ${used} 個數`);
+  });
+
+  await safe('抽樣頻率', () => {
+    const ws = [1, 2, 3, 4], W = 10, N = 100000;
+    const cnt = [0, 0, 0, 0];
+    for (let k = 0; k < N; k++) cnt[pickIndex(ws)]++;
+    const detail = [];
+    let pass = true;
+    ws.forEach((w, i) => {
+      const p = w / W, f = cnt[i] / N, bound = 4 * Math.sqrt(p * (1 - p) / N);
+      detail.push(`p=${p} f=${f.toFixed(4)} 容許 ±${bound.toFixed(4)}`);
+      if (Math.abs(f - p) > bound) pass = false;
+    });
+    check('抽樣頻率：權重 [1,2,3,4] 抽 100,000 次，|f − p| ≤ 4σ', pass, detail.join('；'));
+  });
+
+  await safe('有效權重', () => {
+    const coef = [0, 1, 2, 3, 10].map(d => effectiveWeight(1, d, 3));
+    check('有效權重：C = 3 時 d = 0,1,2,3,10 的係數為 1,2,3,4,4', coef.join() === '1,2,3,4,4', coef.join());
+    const coef0 = [0, 1, 5].map(d => effectiveWeight(1, d, 0));
+    check('有效權重：C = 0 時係數全為 1', coef0.every(x => x === 1), coef0.join());
+    check('有效權重：從沒吃過為 b(C + 1)', effectiveWeight(2, null, 3) === 8);
+  });
+
+  await safe('旋轉', () => {
+    let maxErr = 0, minDeltaOk = true, idxOk = true;
+    for (let k = 0; k < 1000; k++) {
+      const n = 2 + randIntBelow(49);
+      const theta = TAU / n;
+      const i = randIntBelow(n);
+      const alpha = i * theta + theta * (0.1 + 0.8 * randUnit());
+      const R0 = randUnit() * TAU;
+      const N = 1 + randIntBelow(5);
+      const delta = spinDelta(R0, alpha, N);
+      if (delta < TAU * N) minDeltaOk = false;
+      const fin = mod(alpha + R0 + delta, TAU);
+      const err = Math.abs(mod(fin - POINTER + Math.PI, TAU) - Math.PI);
+      maxErr = Math.max(maxErr, err);
+      if (pointerIndex(mod(R0 + delta, TAU), n) !== i) idxOk = false;
+    }
+    check('旋轉：1,000 組停止角度與 3π/2 的差 < 1e−9', maxErr < 1e-9, `最大誤差 ${maxErr.toExponential(2)}`);
+    check('旋轉：Δ ≥ 2πN', minDeltaOk);
+    check('指針判定：停止時指到的格子 = 抽中的 i', idxOk);
+  });
+
+  await safe('配色', () => {
+    let ok = true;
+    for (let n = 2; n <= 50; n++) for (let i = 0; i < n; i++) if (colorIndex(i, n) === colorIndex((i + 1) % n, n)) ok = false;
+    check('配色：n = 2…50 時相鄰兩格（含首尾）不同色', ok);
+  });
+
+  await safe('emoji 字素', () => {
+    check('emoji：🌶️ 的 length 是 3，但字素數是 1', '🌶️'.length === 3 && gLen('🌶️') === 1);
+    check('emoji：checkEmoji 接受 🍽️、拒絕 ab 與 🍜🍜', checkEmoji('🍽️') === '🍽️' && checkEmoji('ab') === null && checkEmoji('🍜🍜') === null);
+  });
+
+  const sample = { n: '測試', i: DEFAULT_ITEMS.map(([n, e, c, p]) => [n, e, c, p, 1]) };
+  const rejects = async code => { try { await decodeShare(code); return false; } catch (e) { return true; } };
+  await safe('分享', async () => {
+    const code = await encodeCompact(sample);
+    const back = await decodeShare(code);
+    const same = back.name === sample.n && back.items.length === sample.i.length
+      && back.items.every((it, k) => [it.name, it.emoji, it.category, it.price, it.weight].join('|') === sample.i[k].join('|'));
+    check(`分享：編碼後解碼與原轉盤相同（格式 ${code.slice(0, 2)}，${code.length} 字元）`, same);
+    const raw0 = '0.' + b64urlEncode(new TextEncoder().encode(JSON.stringify(sample)));
+    check('分享：未壓縮格式 0. 也能解碼', !(await rejects(raw0)));
+    check('分享：竄改一個字元（換成 base64url 以外的字元）被拒絕', await rejects(code.slice(0, 5) + '!' + code.slice(6)));
+    const many = { n: 'x', i: Array.from({ length: 51 }, (_, k) => ['項目' + k, '', 'rice', 1, 1]) };
+    check('分享：51 項被拒絕', await rejects(await encodeCompact(many)));
+    const mutateOne = (k, v) => { const c = JSON.parse(JSON.stringify(sample)); c.i[0][k] = v; return c; };
+    check('分享：類別不在 enum 被拒絕', await rejects(await encodeCompact(mutateOne(2, 'pizza'))));
+    check('分享：價位為 4 被拒絕', await rejects(await encodeCompact(mutateOne(3, 4))));
+    check('分享：名稱 21 字被拒絕', await rejects(await encodeCompact(mutateOne(0, '字'.repeat(21)))));
+    check('分享：權重 1.5 被拒絕', await rejects(await encodeCompact(mutateOne(4, 1.5))));
+    check('分享：同名項目被拒絕', await rejects(await encodeCompact(mutateOne(0, sample.i[1][0]))));
+  });
+
+  await safe('彩蛋', () => {
+    const r = name => ({ wheelId: 'w', name });
+    check('命中注定：連續 2 次不觸發', !isDestiny([r('A'), r('A')]));
+    check('命中注定：連續 3 次觸發', isDestiny([r('B'), r('A'), r('A'), r('A')]));
+    check('命中注定：不同轉盤不觸發', !isDestiny([r('A'), r('A'), { wheelId: 'v', name: 'A' }]));
+    const at = (hh, mm) => new Date(2026, 9, 18, hh, mm);
+    check('深夜食堂：22:59 否、23:00 是、03:59 是、04:00 否',
+      !isNight(at(22, 59)) && isNight(at(23, 0)) && isNight(at(3, 59)) && !isNight(at(4, 0)));
+    // 模擬逐鍵輸入，與 keydown 處理器相同：保留最近 10 鍵，每按一鍵檢查一次
+    const typeKeys = keys => {
+      let buf = [];
+      for (const k of keys) {
+        buf.push(normKey(k));
+        if (buf.length > KONAMI.length) buf.shift();
+        if (konamiMatch(buf)) return true;
+      }
+      return false;
+    };
+    check('宵夜模式：完整 Konami 序列觸發', typeKeys(KONAMI));
+    check('宵夜模式：前面多按幾個 ↑（↑↑↑↑↓↓←→←→BA）仍觸發', typeKeys(['ArrowUp', 'ArrowUp', ...KONAMI]));
+    check('宵夜模式：大寫 B、A 也觸發', typeKeys([...KONAMI.slice(0, 8), 'B', 'A']));
+    check('宵夜模式：中間按錯一鍵不觸發', !typeKeys([...KONAMI.slice(0, 5), 'ArrowUp', ...KONAMI.slice(6)]));
+  });
+
+  await safe('統計', () => {
+    const now = new Date(2026, 9, 18, 12).getTime();
+    const day = 86400000;
+    const hist = [
+      { at: now - 6 * day, itemName: '拉麵', category: 'noodle', accepted: true },
+      { at: now - 7 * day, itemName: '拉麵', category: 'noodle', accepted: true },
+      { at: now, itemName: '便當', category: 'rice', accepted: true },
+      { at: now, itemName: '火鍋', category: 'hotpot', accepted: false },
+    ];
+    const s = computeStats(hist, now, 7);
+    check('統計：近 7 天含今天往前 6 天、只計接受的', s.total === 2 && s.rejected.length === 1 && s.rejected[0][0] === '火鍋');
+  });
+
+  const passed = results.filter(r => r.pass).length;
+  console.table(results);
+  const panel = h('div', { class: 'test-panel' },
+    h('h2', { text: `自動測試：${passed} / ${results.length} 通過` }),
+    h('ul', {}, ...results.map(r => h('li', { class: r.pass ? 'pass' : 'fail' },
+      h('span', { text: r.name }), r.detail ? h('div', { class: 'muted', text: r.detail }) : null))));
+  panel.dataset.passed = String(passed);
+  panel.dataset.total = String(results.length);
+  panel.id = 'testPanel';
+  document.body.append(panel);
+}
+})();
+</script>
+</body>
+</html>
